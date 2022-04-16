@@ -11,15 +11,19 @@
 
 
 
-
-
 typedef struct bucket
 {
     char* word;
     struct bucket *next;
 } bucket;
 
+
 bucket * hash_table[DICT_SIZE];
+const unsigned MAX_TEXT = 1000;
+char *text[MAX_TEXT];
+
+
+
 
 int hash(char s[]) { 
     int size = strlen(s);
@@ -56,7 +60,7 @@ void print_array()
 }
 
 
-void read_file()
+void create_dict()
 {
     char *filename = "words.txt";
     FILE *fp = fopen(filename, "r");
@@ -85,6 +89,32 @@ void read_file()
 }
 
 
+void get_text()
+{
+    char* filename = "text_to_check.txt";
+    FILE* fp = fopen(filename, "r");
+
+    const unsigned MAX_LINE = 256;
+    char line[MAX_LINE];
+    int i=0;
+    char *cp;
+    char *bp;
+
+    while (fgets(line, MAX_LINE, fp) != NULL) {
+        bp = line;
+        while (1) {
+            cp = strtok(bp, " ");
+            bp = NULL;
+            if (cp == NULL) {
+                break;
+            }
+            text[i++] = cp;
+        }
+    }
+}
+
+
+
 
 int main() 
 {
@@ -92,7 +122,9 @@ int main()
     for (int i=0; i < DICT_SIZE; i++) {
         hash_table[i] = NULL;
     }
-    read_file();
+
+    get_text();
+    create_dict();
     print_array();
     // for (int i=0; i < DICT_SIZE; i++) {
     //     free(*hash_table[i]);
