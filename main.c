@@ -1,13 +1,13 @@
 
-
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
 
-#define ALPHA 27
-#define DICT_SIZE 10
-#define MAX_WORD 256
+#define DICT_SIZE 1000
+#define MAX_WORD 20
+int ALPHA = 27;
+
 
 
 
@@ -18,20 +18,186 @@ typedef struct bucket
 } bucket;
 
 
+int hash(char s[]);
+
+
+typedef struct string_list
+{
+    char * str;
+    struct string_list * next;
+} string_list;
+
+
+void print_string_list(string_list *sl)
+{
+    printf("%s  ", sl->str);
+    if (sl->next == NULL) {
+        printf("\n\n");
+        return;
+    }
+    print_string_list(sl->next);
+}
+
+
+void append_string_list(string_list **l, char * s)
+{
+    // printf("appending string: %s\n", s);
+    
+    string_list * end = malloc(sizeof(string_list));
+    end->str = s;
+    end->next = *l;
+    *l = end;
+}
+
+
+int check_in_string_list(string_list * sl, char * s)
+{
+    if (sl->str == NULL) {
+        return 0;
+    }
+    if (strcmp(sl->str, s) == 0) {
+        return 1;
+    }
+    if (sl->next == NULL) {
+        return 0;
+    }
+    check_in_string_list(sl->next, s);
+    return 0;
+}
+
+
+
+
+
+
+int is_word_in(bucket* b, char* w)
+{
+    
+    if (b == NULL) {
+        return 0;
+    } 
+    
+    if (strcmp(b->word,w) == 0) {
+        return 1;
+    }
+    return is_word_in(b->next, w);
+}
+
+
+
+struct list
+{
+    int v;
+    struct list *next;
+};
+
+
+void print_list(int *list, int size)
+{
+    printf("\n\n Text indexes: \n");
+    for (int i=0; i < size; i++) {
+        if (list[i] == -1) {
+            return;
+        }
+        printf("%i, ", list[i]);
+    }
+    printf("\n\n");
+}
+
+
+
 bucket * hash_table[DICT_SIZE];
-const unsigned MAX_TEXT = 1000;
+const unsigned MAX_TEXT = 100;
 char *text[MAX_TEXT];
 
 
 
 
-int hash(char s[]) { 
-    int size = strlen(s);
-    int num = pow(ALPHA, size);
-    for (int i=0; i < size-1; i++) {
-        num += pow(ALPHA, size-i-1) * (s[i]-96);
+
+string_list * edit_dist1(char * str)
+{
+    string_list * strings = malloc(sizeof(string_list));
+    char alphabet[27] = "abcdefghijklmnopqrstuvwxyz";
+    int MAX_WOOOORD = 20;
+
+
+    // remove character check - 
+    int str_len = strlen(str);
+    int h = 0;
+    char checker[MAX_WORD];
+    for (int i=0; i < str_len; i++) {
+
+        strcpy(checker, str);
+        // remove character
+        memmove(&checker[i], &checker[i+1], strlen(checker) - i);
+        h = hash(checker);
+        if (is_word_in(hash_table[h], checker)) {
+            if ((check_in_string_list(strings, checker) == 0)){ // in future speed up by not checking if str is already in string list, 
+                //                                              instead use hueristic since know that fails when extra letter is same as one before in the str
+                printf("hash: %i   ", h);
+                char * correct_word;
+                strcpy(correct_word, checker);
+                append_string_list(&strings, correct_word);
+            }
+        }
+        
+        // insert character
+       for (int alph=0; alph < 26; alph++)
+       {
+            char checker[str_len+1];
+            strncpy(checker, str, i);
+            char a[1];
+            a[0] = alphabet[alph];
+            strcpy(checker+i, a);
+            strcpy(checker+i+1, str+i);
+            h = hash(checker);
+            printf("final checking: %s\n", checker);
+            if (is_word_in(hash_table[h], checker)) {
+                if ((check_in_string_list(strings, checker) == 0)){
+                    printf("\n\nhash: %i \n", h);
+                    printf("successful checker: %s\n", checker);
+                    // char correct_word[strlen(checker)];
+                    // char * correct_word;
+                    char * correct_word = malloc(sizeof(checker));
+
+                    printf("YO-1\n");
+                    strcpy(correct_word, checker);
+                    printf("YO\n");
+                    printf("correct word: %s\n", correct_word);
+                    append_string_list(&strings, correct_word);
+                    printf("current string list: \n");
+                    print_string_list(strings);
+                }
+            }
+            // printf("strings: \n");
+            // print_string_list(strings);
+        }
+
     }
-    return num % DICT_SIZE;
+    printf("\nstrings: \n");
+    print_string_list(strings);
+
+    return strings;
+}
+
+
+
+
+
+
+
+int hash(char s[]) { 
+
+    int length = strnlen(s, MAX_WORD);
+    int hash_value = 0;
+    for (int i=0; i < length; i++) {
+        hash_value += s[i];
+        hash_value = (hash_value * s[i]);// % DICT_SIZE;
+    }
+    
+    hash_value = abs(hash_value) % DICT_SIZE;
+    
+    return hash_value;
 }
 
 
@@ -45,7 +211,7 @@ void print_bucket(bucket* b)
 }
 
 
-void print_array()
+void print_dict()
 {
     int len = DICT_SIZE;
     for (int i=0; i < len; i++) {
@@ -54,10 +220,22 @@ void print_array()
         } else {
             printf("\t%i", i);
             print_bucket(hash_table[i]);
+            printf("\n");
         }
     }
     printf("\n\n");
 }
+
+
+void print_array(char *a[MAX_TEXT])
+{
+    printf("\n\n\nThe text: \n\n");
+    for (int i=0; i < MAX_TEXT; i++) {
+        printf("%s ", a[i]);
+    }
+    printf("\n\n\n");
+}
+
 
 
 void create_dict()
@@ -71,9 +249,11 @@ void create_dict()
     const unsigned MAX_LENGTH = 256;
     char buffer[MAX_LENGTH];
     while (fgets(buffer, MAX_LENGTH, fp)){
+        buffer[strcspn(buffer, "\n")] = 0;
         int h = hash(buffer);
         bucket *b = malloc(sizeof(struct bucket));
         b->word = malloc(strlen(buffer));
+        
         strcpy(b->word, buffer);
         if (hash_table[h] == NULL) {
             
@@ -83,8 +263,9 @@ void create_dict()
             b->next = hash_table[h];
             hash_table[h] = b;
         }
+
     }
-    print_array();
+    print_dict();
     fclose(fp);
 }
 
@@ -108,35 +289,77 @@ void get_text()
             if (cp == NULL) {
                 break;
             }
-            text[i++] = cp;
+            text[i] = malloc(MAX_WORD);
+            strcpy(text[i], cp);
+            i++;
         }
     }
+
 }
 
 
 
 
+
+int* spell_errors()
+{
+    int t = 0;
+    int e = 0;
+    int h = 0;
+    char* word = text[t];
+    int *err_indx = (int *)malloc(sizeof(int) * MAX_TEXT);
+    int hashes[MAX_TEXT]; // gives errors hash (so dictionary position)
+
+    while (word != NULL) {
+        
+        h = hash(word);        
+        if (!is_word_in(hash_table[h], word)) {
+            printf("\n\nspelling error: %s\n" ,word);
+            printf("corresponding hash value: %i\n", h);
+            err_indx[e] = t; // gives position in text
+            
+        }
+        t++;
+        e++;
+        word = text[t];
+    }
+    err_indx[t] = -1;
+    return err_indx;
+}
+
+
 int main() 
 {
+
+    // TODO
+    // 1. Need to dynamically allocate space for strings in 'strings' variable (string list)
+    //      inside edit_dist1 function because the string being appended to strings (correct_word)
+    //      is going out of scope outside of the for loop 
+    //      around lines 150-170
+    //      this leads to strings list being empty when it gets to end of edit_dist1
+
 
     for (int i=0; i < DICT_SIZE; i++) {
         hash_table[i] = NULL;
     }
 
     get_text();
+    print_array(text);
     create_dict();
-    print_array();
-    // for (int i=0; i < DICT_SIZE; i++) {
-    //     free(*hash_table[i]);
-    // }
-    // printf("\n\n\n");
-    // free(hash_table);
+    print_dict();
 
-    // need to free
-    return 0;
-    
+    char * test1 = "hmself";
+    string_list * sl = edit_dist1(test1);
+    // printf("\n\nasdasd\n\n");
+    // int *error_indexes = spell_errors();
+    // print_list(error_indexes, MAX_TEXT);
 
-
-
+    return 0;    
 
 }
+
+
+//TODO:
+// 1. get input file into dictionary
+// 2. check for spelling errors by checking for duplicates in bucket
+// 3. find nearest word for autocorrect
