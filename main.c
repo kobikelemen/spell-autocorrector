@@ -110,11 +110,19 @@ const unsigned MAX_TEXT = 100;
 char *text[MAX_TEXT];
 
 
+void print_text(){
+    printf("\n\nThe text:\n");
+    for (int i=0; i < MAX_TEXT; i++){
+        printf("%s\n", text[i]);
+    }
+}
+
 
 
 
 string_list * edit_dist1(char * str)
 {
+    printf("in edt_dist1, string:  %s\n", str);
     string_list * strings = malloc(sizeof(string_list));
     char alphabet[27] = "abcdefghijklmnopqrstuvwxyz";
     int MAX_WOOOORD = 20;
@@ -124,10 +132,12 @@ string_list * edit_dist1(char * str)
     int str_len = strlen(str);
     int h = 0;
     char checker[MAX_WORD];
+
     for (int i=0; i < str_len; i++) {
 
         strcpy(checker, str);
         // remove character
+
         memmove(&checker[i], &checker[i+1], strlen(checker) - i);
         h = hash(checker);
         if (is_word_in(hash_table[h], checker)) {
@@ -140,6 +150,7 @@ string_list * edit_dist1(char * str)
             }
         }
         
+
         // insert character
        for (int alph=0; alph < 26; alph++)
        {
@@ -158,23 +169,19 @@ string_list * edit_dist1(char * str)
                     // char correct_word[strlen(checker)];
                     // char * correct_word;
                     char * correct_word = malloc(sizeof(checker));
-
-                    printf("YO-1\n");
                     strcpy(correct_word, checker);
-                    printf("YO\n");
+
                     printf("correct word: %s\n", correct_word);
                     append_string_list(&strings, correct_word);
                     printf("current string list: \n");
                     print_string_list(strings);
                 }
             }
-            // printf("strings: \n");
-            // print_string_list(strings);
         }
 
     }
-    printf("\nstrings: \n");
-    print_string_list(strings);
+    // printf("\nstrings: \n");
+    // print_string_list(strings);
 
     return strings;
 }
@@ -200,6 +207,8 @@ int hash(char s[]) {
 }
 
 
+
+
 void print_bucket(bucket* b)
 {
     if (b == NULL) {
@@ -208,6 +217,9 @@ void print_bucket(bucket* b)
     printf("\t%s", b->word);
     print_bucket(b->next);
 }
+
+
+
 
 
 void print_dict()
@@ -224,6 +236,7 @@ void print_dict()
     }
     printf("\n\n");
 }
+
 
 
 void print_array(char *a[MAX_TEXT])
@@ -269,6 +282,8 @@ void create_dict()
 }
 
 
+
+
 void get_text()
 {
     char* filename = "text_to_check.txt";
@@ -295,6 +310,7 @@ void get_text()
     }
 
 }
+
 
 
 
@@ -344,15 +360,17 @@ void correct_text(int error_indexes[])
 
     for (int i=0; i < num_errors; i++) {
         
+        printf("text[err_indx]: %s\n",text[error_indexes[i]]);
         string_list *ed1;
         ed1 = edit_dist1(text[error_indexes[i]]);
+
         printf("correct text\n");
         print_string_list(ed1);
-
-
+        strcpy(text[i], ed1->str);
 
     }
 
+    print_text();
 }
 
 
@@ -373,6 +391,9 @@ int main()
     int *error_indexes = spell_errors();
     print_list(error_indexes, MAX_TEXT);
     correct_text(error_indexes);
+
+    // char * test1 = "knd";
+    // string_list * sl = edit_dist1(test1);
 
     return 0;    
 

@@ -6,12 +6,5 @@
 
 int main()
 {
-    
-    for (int i=0; i < 3; i++) {
-        char * str = "abc";
-        str = "gfe";
-    }
-    printf("%s", str);
-
 
 }
