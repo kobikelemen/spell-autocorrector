@@ -69,7 +69,6 @@ int check_in_string_list(string_list * sl, char * s)
 
 
 
-
 int is_word_in(bucket* b, char* w)
 {
     
@@ -303,6 +302,10 @@ void get_text()
 
 int* spell_errors()
 {
+    /*
+    Returns indexes of text which contain spelling errors
+    */
+
     int t = 0;
     int e = 0;
     int h = 0;
@@ -317,27 +320,46 @@ int* spell_errors()
             printf("\n\nspelling error: %s\n" ,word);
             printf("corresponding hash value: %i\n", h);
             err_indx[e] = t; // gives position in text
-            
+
+            e++;
         }
         t++;
-        e++;
         word = text[t];
     }
-    err_indx[t] = -1;
+    err_indx[e] = -1;
     return err_indx;
 }
 
 
+
+void correct_text(int error_indexes[])
+{
+    // 1. get words in text array
+    // 2. get edit dist 1 words 
+    // 3. replace words in text variable
+
+    int num_errors = sizeof(*error_indexes)/ sizeof(error_indexes[0]);
+
+    
+
+    for (int i=0; i < num_errors; i++) {
+        
+        string_list *ed1;
+        ed1 = edit_dist1(text[error_indexes[i]]);
+        printf("correct text\n");
+        print_string_list(ed1);
+
+
+
+    }
+
+}
+
+
+
+
 int main() 
 {
-
-    // TODO
-    // 1. Need to dynamically allocate space for strings in 'strings' variable (string list)
-    //      inside edit_dist1 function because the string being appended to strings (correct_word)
-    //      is going out of scope outside of the for loop 
-    //      around lines 150-170
-    //      this leads to strings list being empty when it gets to end of edit_dist1
-
 
     for (int i=0; i < DICT_SIZE; i++) {
         hash_table[i] = NULL;
@@ -348,11 +370,9 @@ int main()
     create_dict();
     print_dict();
 
-    char * test1 = "hmself";
-    string_list * sl = edit_dist1(test1);
-    // printf("\n\nasdasd\n\n");
-    // int *error_indexes = spell_errors();
-    // print_list(error_indexes, MAX_TEXT);
+    int *error_indexes = spell_errors();
+    print_list(error_indexes, MAX_TEXT);
+    correct_text(error_indexes);
 
     return 0;    
 
