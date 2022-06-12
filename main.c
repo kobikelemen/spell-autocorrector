@@ -11,7 +11,6 @@ int num_errors = 0;
 
 
 
-
 typedef struct bucket
 {
     char* word;
@@ -159,7 +158,6 @@ string_list * edit_dist1(char * str)
             strcpy(checker+i, a);
             strcpy(checker+i+1, str+i);
             h = hash(checker);
-            // printf("final checking: %s\n", checker);
             if (is_word_in(hash_table[h], checker)) {
                 if ((check_in_string_list(strings, checker) == 0)){
                     printf("\n\nhash: %i \n", h);
@@ -174,10 +172,7 @@ string_list * edit_dist1(char * str)
                 }
             }
         }
-
     }
-    // printf("\nstrings: \n");
-    // print_string_list(strings);
 
     return strings;
 }
@@ -364,6 +359,11 @@ void correct_text(int error_indexes[])
 
 
 
+//TODO
+// 1. Fix seg faulta on certain error words (e.g. hve -> have)
+// 2. Add character replacement in edit_dist1 
+// 3. edit_dist2?
+
 
 int main() 
 {
@@ -379,7 +379,6 @@ int main()
     int *error_indexes = spell_errors();
     print_list(error_indexes, MAX_TEXT);
     correct_text(error_indexes);
-
     return 0;    
 
 }
