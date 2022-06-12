@@ -3,6 +3,7 @@
         "typeinfo": "c",
         "string": "c",
         "iosfwd": "c",
-        "sstream": "c"
+        "sstream": "c",
+        "string.h": "c"
     }
 }

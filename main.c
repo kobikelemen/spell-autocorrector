@@ -4,9 +4,10 @@
 #include <math.h>
 #include <stdlib.h>
 
-#define DICT_SIZE 1000
+#define DICT_SIZE 10000
 #define MAX_WORD 20
 int ALPHA = 27;
+int num_errors = 0;
 
 
 
@@ -40,9 +41,7 @@ void print_string_list(string_list *sl)
 
 
 void append_string_list(string_list **l, char * s)
-{
-    // printf("appending string: %s\n", s);
-    
+{   
     string_list * end = malloc(sizeof(string_list));
     end->str = s;
     end->next = *l;
@@ -106,7 +105,7 @@ void print_list(int *list, int size)
 
 
 bucket * hash_table[DICT_SIZE];
-const unsigned MAX_TEXT = 100;
+const unsigned MAX_TEXT = 50;
 char *text[MAX_TEXT];
 
 
@@ -122,7 +121,6 @@ void print_text(){
 
 string_list * edit_dist1(char * str)
 {
-    printf("in edt_dist1, string:  %s\n", str);
     string_list * strings = malloc(sizeof(string_list));
     char alphabet[27] = "abcdefghijklmnopqrstuvwxyz";
     int MAX_WOOOORD = 20;
@@ -132,7 +130,6 @@ string_list * edit_dist1(char * str)
     int str_len = strlen(str);
     int h = 0;
     char checker[MAX_WORD];
-
     for (int i=0; i < str_len; i++) {
 
         strcpy(checker, str);
@@ -143,6 +140,7 @@ string_list * edit_dist1(char * str)
         if (is_word_in(hash_table[h], checker)) {
             if ((check_in_string_list(strings, checker) == 0)){ // in future speed up by not checking if str is already in string list, 
                 //                                              instead use hueristic since know that fails when extra letter is same as one before in the str
+
                 printf("hash: %i   ", h);
                 char * correct_word;
                 strcpy(correct_word, checker);
@@ -161,13 +159,11 @@ string_list * edit_dist1(char * str)
             strcpy(checker+i, a);
             strcpy(checker+i+1, str+i);
             h = hash(checker);
-            printf("final checking: %s\n", checker);
+            // printf("final checking: %s\n", checker);
             if (is_word_in(hash_table[h], checker)) {
                 if ((check_in_string_list(strings, checker) == 0)){
                     printf("\n\nhash: %i \n", h);
                     printf("successful checker: %s\n", checker);
-                    // char correct_word[strlen(checker)];
-                    // char * correct_word;
                     char * correct_word = malloc(sizeof(checker));
                     strcpy(correct_word, checker);
 
@@ -185,8 +181,6 @@ string_list * edit_dist1(char * str)
 
     return strings;
 }
-
-
 
 
 
@@ -336,7 +330,7 @@ int* spell_errors()
             printf("\n\nspelling error: %s\n" ,word);
             printf("corresponding hash value: %i\n", h);
             err_indx[e] = t; // gives position in text
-
+            num_errors++;
             e++;
         }
         t++;
@@ -350,27 +344,22 @@ int* spell_errors()
 
 void correct_text(int error_indexes[])
 {
-    // 1. get words in text array
-    // 2. get edit dist 1 words 
-    // 3. replace words in text variable
-
-    int num_errors = sizeof(*error_indexes)/ sizeof(error_indexes[0]);
-
     
-
     for (int i=0; i < num_errors; i++) {
-        
-        printf("text[err_indx]: %s\n",text[error_indexes[i]]);
         string_list *ed1;
         ed1 = edit_dist1(text[error_indexes[i]]);
-
-        printf("correct text\n");
-        print_string_list(ed1);
-        strcpy(text[i], ed1->str);
+        strcpy(text[error_indexes[i]], ed1->str); // just take first string w/ edit dist. 1
 
     }
-
+    printf("\n\nThe edited text:");
     print_text();
+    FILE *file = fopen("text_to_check.txt", "w");
+    int i = 0;
+    while (text[i] != NULL){
+        fprintf(file, "%s ",text[i]);
+        i++;
+    }
+    fclose(file);
 }
 
 
@@ -387,20 +376,10 @@ int main()
     print_array(text);
     create_dict();
     print_dict();
-
     int *error_indexes = spell_errors();
     print_list(error_indexes, MAX_TEXT);
     correct_text(error_indexes);
 
-    // char * test1 = "knd";
-    // string_list * sl = edit_dist1(test1);
-
     return 0;    
 
 }
-
-
-//TODO:
-// 1. get input file into dictionary
-// 2. check for spelling errors by checking for duplicates in bucket
-// 3. find nearest word for autocorrect
