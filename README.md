@@ -1,6 +1,6 @@
 # spell-autocorrector
 
-Type text you want autocorrected into text_to_check.txt then compile and run main.c which will
+Type text you want autocorrected into `text_to_check.txt` then compile and run `./main` which will
 replace spelling errors in the text file
 
 It uses a bloom filter to check whether each word is spelt correctly and if not then finds
